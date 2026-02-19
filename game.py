@@ -37,6 +37,9 @@ state = game(
 
 #returns an updated dict with all game data
 def updateData():
+    cards = []
+    if len(state.board_cards) > 0:
+        cards = [str(i) for i in state.board_cards]
     data = {
     "TemplateBot1":
     {
@@ -50,7 +53,7 @@ def updateData():
         "Bet": state.bets[1],
         "Playing": state.statuses[1]
     },
-    "Cards": [str(i) for i in tuple(state.cards_in_play)],
+    "Cards": cards,
     "Pot": state.total_pot_amount,
     "Min": state.min_completion_betting_or_raising_to_amount,
     "Size": state.player_count
@@ -111,4 +114,4 @@ with open("data.json", "w") as file:
 print(data)
 #hole cards are the cards the player has
 print(state.hole_cards)
-print(tuple(state.cards_in_play))
+print(state.board_cards)
