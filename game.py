@@ -1,13 +1,16 @@
 import json
+#pokerkit imports
 from pokerkit import (
      Automation,
      FixedLimitDeuceToSevenLowballTripleDraw,
      NoLimitTexasHoldem,
 )
+#bots, these are templates right now but will be updated with submissions
 from Players.TemplateBot1 import bot as bot1
 from Players.TemplateBot2 import bot as bot2
 players = [bot1, bot2]
 
+#premade game class from pokerkit
 game = NoLimitTexasHoldem(
     # automations
     automations = (
@@ -28,10 +31,11 @@ game = NoLimitTexasHoldem(
     min_bet=25,  # min first bet/raise amount
 )
 state = game(
-    1000,  # starting stacks
+    1000,  # starting stacks(money)
     2,  # number of players
 )
 
+#returns an updated dict with all game data
 def updateData():
     data = {
     "TemplateBot1":
@@ -53,6 +57,7 @@ def updateData():
     }
     return data
 
+#returns whether or not there is a winner in the current game
 def checkWin():
     lost = 0
     for i in range(0,state.player_count):
@@ -60,8 +65,10 @@ def checkWin():
             lost += 1
     return lost >= state.player_count - 1
 
+#parses the return value from the current players getAction method
 def parseBotAction():
     bot_index = state.actor_index
+    #this is the only point where getAction is called
     response = players[bot_index].getAction(state.hole_cards[bot_index], state.can_fold)
     if response == 0:
         state.check_or_call()
@@ -78,12 +85,19 @@ def parseBotAction():
                 state.fold()
             except:
                 state.check_or_call()
+
+#main
+
+#runs until someone has won
 while(not checkWin()):
+    #uploads data to data.json
     data = updateData()
     with open("data.json", "w") as file:
         json.dump(data,file)
+    #runs bot script
     if(state.total_pot_amount != 0):
         parseBotAction()
+    #pot will always be > 0 due to blinds, unless the round has ended and the pot has been distributed
     else:
         state = game(
         state.stacks,  # starting stacks
@@ -91,6 +105,10 @@ while(not checkWin()):
     )
 
 data = updateData()
+#uploads data to data.json, this doesn't do anything functionally but may be useful for debugging
+with open("data.json", "w") as file:
+    json.dump(data,file)
 print(data)
+#hole cards are the cards the player has
 print(state.hole_cards)
 print(tuple(state.cards_in_play))
